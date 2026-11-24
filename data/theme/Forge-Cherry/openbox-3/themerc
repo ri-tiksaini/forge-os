@@ -1,0 +1,39 @@
+# Forge OS Dark Cherry Window Theme (real minimize/maximize/close buttons + drag/resize)
+border.width: 2
+padding.width: 10
+padding.height: 6
+window.handle.width: 4
+window.client.padding.width: 0
+window.client.padding.height: 0
+menu.border.width: 1
+
+window.active.border.color: #9B1126
+window.inactive.border.color: #26161A
+
+window.active.title.bg: flat solid
+window.active.title.bg.color: #121217
+window.active.label.bg: parentrelative
+window.active.label.text.color: #ECECEF
+window.active.button.unpressed.bg: parentrelative
+window.active.button.unpressed.image.color: #D4D4D8
+window.active.button.hover.bg: flat solid
+window.active.button.hover.bg.color: #240B10
+window.active.button.hover.image.color: #FFFFFF
+window.active.button.close.hover.bg: flat solid
+window.active.button.close.hover.bg.color: #9B1126
+window.active.button.close.hover.image.color: #FFFFFF
+
+window.inactive.title.bg: flat solid
+window.inactive.title.bg.color: #070709
+window.inactive.label.bg: parentrelative
+window.inactive.label.text.color: #71717A
+window.inactive.button.unpressed.bg: parentrelative
+window.inactive.button.unpressed.image.color: #71717A
+
+menu.items.bg: flat solid
+menu.items.bg.color: #111115
+menu.items.text.color: #ECECEF
+menu.items.active.bg: flat solid
+menu.items.active.bg.color: #9B1126
+menu.items.active.text.color: #FFFFFF
+menu.border.color: #26161A

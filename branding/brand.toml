@@ -1,0 +1,17 @@
+# Single source of truth for user-visible Forge OS branding (Blueprint 0.3 & 6.1)
+name         = "Forge OS"
+id           = "forge"
+id_like      = "debian"
+version      = "1.0"
+codename     = "crimson-duck"
+pretty_name  = "Forge OS 1.0 (Dark Cherry Edition)"
+home_url     = "https://forge.example.org"
+support_url  = "https://forge.example.org/help"
+bug_url      = "https://forge.example.org/bugs"
+upstream_doc = "https://wiki.debian.org"
+accent       = "#9B1126"
+bg           = "#070709"
+fg           = "#ECECEF"
+radius_px    = 12
+font_ui      = "Inter"
+font_mono    = "JetBrains Mono"

@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/forge-brand",
+    "crates/forge-tier",
+    "crates/forge-conf",
+    "crates/forge-proto",
+    "crates/forge-catalog",
+    "crates/forge-txn",
+    "crates/forged",
+    "crates/dev-cli",
+    "crates/forge-shell",
+    "crates/forge-settings",
+    "crates/forge-lab",
+]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+license = "GPL-3.0-or-later"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

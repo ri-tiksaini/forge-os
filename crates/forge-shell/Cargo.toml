@@ -1,0 +1,18 @@
+[package]
+name = "forge-shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+gtk-ui = ["dep:gtk4"]
+layer-shell = ["gtk-ui", "dep:gtk4-layer-shell"]
+
+[dependencies]
+forge-brand = { path = "../forge-brand" }
+forge-catalog = { path = "../forge-catalog" }
+forge-proto = { path = "../forge-proto" }
+forge-tier = { path = "../forge-tier" }
+gtk4 = { version = "0.9", optional = true }
+gtk4-layer-shell = { version = "0.4", optional = true }

@@ -1,0 +1,8 @@
+[Unit]
+Description=Forge OS On-Demand Redis Proxy Socket
+
+[Socket]
+ListenStream=127.0.0.1:6379
+
+[Install]
+WantedBy=sockets.target

@@ -1,0 +1,56 @@
+# Forge OS Boot Splash — Solid Black Duck + FORGE OS + Dark Cherry Loading Bar
+Window.SetBackgroundTopColor(0.027, 0.027, 0.035);
+Window.SetBackgroundBottomColor(0.027, 0.027, 0.035);
+
+sw = Window.GetWidth();
+sh = Window.GetHeight();
+
+logo.image = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(sw / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(sh / 2 - logo.image.GetHeight() - 10);
+
+title.image = Image("title.png");
+title.sprite = Sprite(title.image);
+title.sprite.SetX(sw / 2 - title.image.GetWidth() / 2);
+title.sprite.SetY(sh / 2 + 8);
+
+bar_bg.image = Image("bar_bg.png");
+bar_bg.sprite = Sprite(bar_bg.image);
+bar_x = sw / 2 - bar_bg.image.GetWidth() / 2;
+bar_y = sh / 2 + 84;
+bar_bg.sprite.SetX(bar_x);
+bar_bg.sprite.SetY(bar_y);
+
+bar_fg.orig = Image("bar_fg.png");
+bar_fg.sprite = Sprite();
+bar_fg.sprite.SetX(bar_x);
+bar_fg.sprite.SetY(bar_y);
+
+global.progress = 0.08;
+
+fun draw_bar(p) {
+    if (p < 0.05) p = 0.05;
+    if (p > 1.0) p = 1.0;
+    w = Math.Int(bar_fg.orig.GetWidth() * p);
+    if (w < 8) w = 8;
+    bar_fg.sprite.SetImage(bar_fg.orig.Scale(w, bar_fg.orig.GetHeight()));
+}
+
+draw_bar(global.progress);
+
+fun boot_progress_cb(duration, progress) {
+    if (progress > global.progress) {
+        global.progress = progress;
+    }
+    draw_bar(global.progress);
+}
+Plymouth.SetBootProgressFunction(boot_progress_cb);
+
+fun refresh_cb() {
+    if (global.progress < 0.92) {
+        global.progress += 0.004;
+        draw_bar(global.progress);
+    }
+}
+Plymouth.SetRefreshFunction(refresh_cb);

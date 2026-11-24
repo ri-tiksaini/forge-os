@@ -1,0 +1,9 @@
+[Unit]
+Description=Forge OS On-Demand MariaDB Socket Proxy
+Requires=mariadb.service
+After=mariadb.service
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd --exit-idle-time=90s 127.0.0.1:3307
+PrivateTmp=yes

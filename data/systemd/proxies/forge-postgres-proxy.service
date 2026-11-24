@@ -1,0 +1,9 @@
+[Unit]
+Description=Forge OS On-Demand PostgreSQL Socket Proxy
+Requires=postgresql.service
+After=postgresql.service
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd --exit-idle-time=90s 127.0.0.1:5433
+PrivateTmp=yes

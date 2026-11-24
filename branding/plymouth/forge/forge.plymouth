@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Forge OS
+Description=Forge OS Dark Cherry & Solid Black Duck Boot Splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/forge
+ScriptFile=/usr/share/plymouth/themes/forge/forge.script

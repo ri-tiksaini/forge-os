@@ -1,0 +1,9 @@
+[package]
+name = "forge-conf"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forge-brand = { path = "../forge-brand" }
+forge-tier = { path = "../forge-tier" }

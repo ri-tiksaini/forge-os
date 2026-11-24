@@ -1,0 +1,10 @@
+/target/
+/build/
+*.iso
+*.img
+*.qcow2
+*.squashfs
+*.zip
+*.tar.gz
+*.log
+.DS_Store

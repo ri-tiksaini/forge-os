@@ -1,0 +1,8 @@
+[Unit]
+Description=Forge OS Allowlisted Config Backup (Blueprint 6.10)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/forge-config-backup
+Nice=10
+IOSchedulingClass=idle

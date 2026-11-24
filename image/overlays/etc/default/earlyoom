@@ -1,0 +1,2 @@
+# Kill compilers/bundlers, never the desktop (Blueprint 5.8)
+EARLYOOM_ARGS="-m 5 -s 10 --avoid '^(labwc|sway|forge-shell|firefox-esr)$' --prefer '^(cc1plus|rustc|node|ld)$'"

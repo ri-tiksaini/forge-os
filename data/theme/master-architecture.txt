@@ -1,0 +1,349 @@
+================================================================================
+   FORGE OS 1.0  //  MASTER ARCHITECTURE, COMPLETE FILE TREE & WIRING GUIDE
+================================================================================
+
+★  HIGHLIGHTED MAIN HUB FILES  (START HERE — THE 10 MOST IMPORTANT FILES)
+================================================================================
+  [★ MAIN 1]  branding/brand.toml                 -> Master Dark Cherry colors & fonts
+  [★ MAIN 2]  crates/forge-conf/src/emit_labwc.rs -> Window manager, titlebars, mouse & keys
+  [★ MAIN 3]  data/theme/waybar/config            -> Bottom taskbar buttons & live widgets
+  [★ MAIN 4]  data/theme/waybar/style.css         -> Bottom taskbar visual theme (CSS)
+  [★ MAIN 5]  crates/forge-shell/src/ui.rs        -> Duck Start Menu, Quick Settings & Power
+  [★ MAIN 6]  crates/forge-settings/src/ui.rs     -> 9-page Settings Control Center & Themes
+  [★ MAIN 7]  scripts/forge-session.sh            -> Boots desktop (labwc + software fallback)
+  [★ MAIN 8]  crates/forged/src/lib.rs            -> Zero-RAM package daemon & DB parking
+  [★ MAIN 9]  scripts/forge-repair.sh             -> Non-destructive OS & Factory Core Restore
+  [★ MAIN 10] image/rootfs.mk                     -> Installs every binary/script into OS rootfs
+
+================================================================================
+1. WIRING DIAGRAM A: BOOT -> LOGIN -> DESKTOP -> TASKBAR -> APPS
+================================================================================
+
+  [Power On / UEFI or Legacy BIOS]
+       │
+       ▼
+  GRUB Bootloader (/boot/grub/grub.cfg  ◄── built by image/iso.mk & scripts/forge-installer.sh)
+       │  kernel cmdline: quiet splash loglevel=3
+       ▼
+  Linux 6.12 LTS Kernel
+       ├──► Plymouth Duck Splash (/usr/share/plymouth/themes/forge/forge.script + forge.plymouth)
+       ├──► Kernel Memory Tuning (/etc/sysctl.d/99-forge.conf  -> zram swappiness=100)
+       ├──► OOM Desktop Shield   (/etc/default/earlyoom        -> protects labwc/desktop)
+       └──► Journald Log Cap     (/etc/systemd/journald.conf.d/forge.conf)
+       │
+       ▼
+  systemd (PID 1)
+       ├──► greetd (/etc/greetd/config.toml)
+       │         │  launches user "forge" on VT1
+       │         ▼
+       │    ★ /usr/local/bin/forge-session  (repo: scripts/forge-session.sh)
+       │         │  1. Detects GPU/Tier via forge-tier
+       │         │  2. Sets GTK_THEME, GSK_RENDERER=cairo, WLR_RENDERER=pixman (Tier 0)
+       │         │  3. Execs labwc (Wayland stacking window manager)
+       │         ▼
+       │    labwc Window Manager
+       │         ├── Reads ~/.config/labwc/rc.xml        (◄── ★ crates/forge-conf/src/emit_labwc.rs)
+       │         │      • _ □ × window titlebar buttons, mouse drag/resize, right-click menu
+       │         │      • All shortcuts from data/keymap.toml (Win, Alt+Tab, Win+E/I/N/A/V/Shift+S)
+       │         ├── Reads Window Theme                  (◄── data/theme/Forge-Cherry/openbox-3/themerc)
+       │         └── Runs ~/.config/labwc/autostart:
+       │                ├── swaybg         ──► /usr/share/forge/wallpaper/forge-cherry.png
+       │                ├── forge-clip-watch ─► tracks Wayland clipboard for Win+V
+       │                └── waybar         ──► ★ /usr/share/forge/waybar/config + style.css
+       │                                         ├── Duck Logo   ──► forge-toggle launcher ──► ★ forge-shell
+       │                                         ├── Taskbar     ──► wlr/taskbar (running windows)
+       │                                         ├── Quick Menu  ──► forge-toggle quick    ──► ★ forge-shell
+       │                                         ├── Broom Icon  ──► sudo forge-clean
+       │                                         └── Power Icon  ──► forge-toggle power    ──► ★ forge-shell
+
+================================================================================
+2. WIRING DIAGRAM B: THEME, COLORS & DESKTOP UI PIPELINE
+================================================================================
+
+  ★ branding/brand.toml  (#070709 Obsidian, #9B1126 Dark Cherry, #C42B42 Highlight)
+       │  compiled at build time by crates/forge-brand/build.rs
+       ▼
+  crates/forge-brand/src/lib.rs  (BG, FG, ACCENT, FONT_UI, FONT_MONO)
+       │
+       ├──► crates/forge-conf/src/emit_gtk.rs   ──► ~/.config/gtk-4.0/gtk.css & gtk-3.0/gtk.css
+       ├──► crates/forge-conf/src/emit_foot.rs  ──► ~/.config/foot/foot.ini (Ctrl+V, Ctrl+Shift+C)
+       ├──► crates/forge-conf/src/emit_labwc.rs ──► ~/.config/labwc/{rc.xml,autostart}
+       ├──► crates/forge-conf/src/emit_sway.rs  ──► ~/.config/sway/config (optional tiling mode)
+       ├──► ★ crates/forge-shell/src/ui.rs      ──► Duck Start Launcher + Quick Settings + Power
+       ├──► ★ crates/forge-settings/src/ui.rs   ──► Control Center (5 live-switchable Color Themes)
+       └──► crates/forge-lab/src/ui.rs          ──► Developer Labs (this application)
+
+================================================================================
+3. WIRING DIAGRAM C: ZERO-RAM PACKAGE ENGINE & PARKED DATABASES
+================================================================================
+
+  User runs `dev add postgres`  OR  clicks Install in ★ forge-settings (Software Store)
+       │
+       ▼
+  crates/dev-cli/src/main.rs  (or crates/forge-settings/src/model.rs)
+       │  connects to UNIX socket: /run/forge/forged.sock
+       ▼
+  /etc/systemd/system/forged.socket  (0 MiB RAM when idle)
+       │  systemd spawns daemon on first request
+       ▼
+  ★ crates/forged/src/lib.rs  (/etc/systemd/system/forged.service, exits after 90s idle)
+       ├──► crates/forged/src/policy.rs   ──► checks SO_PEERCRED + org.forge.catalog.policy (Polkit)
+       ├──► crates/forge-catalog/         ──► loads /usr/share/forge/catalog/*/*.toml + SHA-256
+       ├──► crates/forge-txn/             ──► runs batched apt + write-ahead rollback journal
+       └──► crates/forged/src/parking.rs  ──► installs zero-RAM socket proxies:
+                 ├── forge-postgres-proxy.socket (5432) ──► wakes postgresql on demand (90s idle sleep)
+                 ├── forge-redis-proxy.socket    (6379) ──► wakes redis on demand
+                 └── forge-mariadb-proxy.socket  (3306) ──► wakes mariadb on demand
+
+================================================================================
+4. WIRING DIAGRAM D: SECURITY, ERROR TRACKING, BACKUP & OS REPAIR
+================================================================================
+
+  Terminal Bash Shell
+       └──► /etc/profile.d/forge-track.sh (repo: data/theme/forge-track-profile.sh)
+                 │  logs non-zero exit commands + timestamp + session to ~/.local/state/forge/
+                 ▼
+            /usr/local/bin/forge-track   (view/filter errors, wired into Settings -> About & Repair)
+
+  Background Intrusion & Security Tools:
+       ├── /usr/local/bin/forge-watch    ──► audits listening ports, /tmp executables & auth logs
+       ├── /usr/local/bin/forge-security ──► UFW firewall lock, swayidle screen lock & status
+       ├── /usr/local/bin/forge-netcheck ──► Wi-Fi, gateway, DNS & adblock diagnostics
+       ├── /usr/local/bin/forge-ports    ──► inspects open dev ports & kills stuck dev servers
+       └── /usr/local/bin/forge-adblock  ──► writes data/adblock/hosts.block -> /etc/hosts
+                                             + /etc/firefox/policies/policies.json
+
+  Safety Net & Recovery:
+       ├── forge-config-backup.timer ──► forge-config-backup.service ──► forge-config-backup.sh
+       └── ★ /usr/local/bin/forge-repair:
+                 • configs  -> regenerates ~/.config via forge-conf
+                 • packages -> runs dpkg --configure -a & apt --fix-broken
+                 • factory  -> restores /var/lib/forge/factory-core/* (NEVER touches /home!)
+
+================================================================================
+5. COMPLETE DIRECTORY OF ALL 65+ CORE SYSTEM FILES (WITH WIRING)
+================================================================================
+
+--- [A] CORE SCRIPTS (/usr/local/bin/forge-*) ---
+★ forge-session         (scripts/forge-session.sh)
+    Role: Starts Wayland desktop (labwc + software fallback for old GPUs).
+    Wired From: /etc/greetd/config.toml  |  Wired To: forge-tier, labwc
+
+★ forge-toggle          (scripts/forge-toggle.sh)
+    Role: PID-safe toggle for Duck Launcher, Quick Settings, Power & Right-Click Menu.
+    Wired From: waybar/config, labwc/rc.xml  |  Wired To: forge-shell
+
+  forge-clean           (scripts/forge-clean.sh)
+    Role: Clears Linux kernel page/dentry/inode caches + dev build caches safely.
+    Wired From: waybar Broom button, Settings  |  Wired To: /proc/sys/vm/drop_caches
+
+  forge-adblock         (scripts/forge-adblock.sh)
+    Role: Enables/disables system-wide /etc/hosts ad/tracker sinkhole.
+    Wired From: Quick Settings, Settings Network  |  Wired To: /etc/hosts, hosts.block
+
+  forge-netcheck        (scripts/forge-netcheck.sh)
+    Role: Diagnoses Wi-Fi, default gateway, DNS resolution & adblock state.
+    Wired From: Terminal, Settings Network  |  Wired To: nmcli, ip, dig/getent
+
+  forge-ports           (scripts/forge-ports.sh)
+    Role: Lists local dev ports (3000, 5173, 8080, 5432...) & kills stuck processes.
+    Wired From: Terminal, Duck Launcher  |  Wired To: ss, kill
+
+  forge-security        (scripts/forge-security.sh)
+    Role: Manages UFW firewall lockdown, screen lock & security audit.
+    Wired From: Terminal, Settings Network/About  |  Wired To: ufw, swaylock/swayidle
+
+  forge-track           (scripts/forge-track.sh)
+    Role: Displays local failed command history with timestamps & exit codes.
+    Wired From: Terminal, Settings About  |  Wired To: ~/.local/state/forge/errors.log
+
+  forge-watch           (scripts/forge-watch.sh)
+    Role: Local intrusion watch (unexpected TCP listeners, /tmp scripts, failed logins).
+    Wired From: Terminal, Settings About  |  Wired To: ss, journalctl, /tmp
+
+★ forge-repair          (scripts/forge-repair.sh)
+    Role: Repairs configs, fixes apt packages, or executes Factory Core Restore (/home safe).
+    Wired From: Settings -> About & Repair, Terminal  |  Wired To: /var/lib/forge/factory-core
+
+  forge-installer       (scripts/forge-installer.sh)
+    Role: Installs Forge OS from Live ISO to bare-metal NVMe/SATA/USB (UEFI + BIOS).
+    Wired From: Live ISO Desktop/Terminal  |  Wired To: parted, mkfs, grub-install, shim-signed
+
+  forge-hud             (scripts/forge-hud.sh)
+    Role: Flicker-free terminal live system monitor (CPU/RAM/Disk/Processes).
+    Wired From: Duck Launcher, Terminal  |  Wired To: /proc/stat, /proc/meminfo
+
+  forge-ssh             (scripts/forge-ssh.sh)
+    Role: Interactive ed25519 SSH key generator & host manager.
+    Wired From: Terminal  |  Wired To: ssh-keygen, ~/.ssh/config
+
+  forge-config-backup   (scripts/forge-config-backup.sh)
+    Role: Allowlisted daily backup of ~/.config (excludes caches/trash).
+    Wired From: forge-config-backup.service  |  Wired To: ~/.local/share/forge/backups/
+
+  forge-clipboard       (scripts/forge-clipboard.sh)
+    Role: Win+V clipboard history selector popup.
+    Wired From: labwc/rc.xml (Win+V)  |  Wired To: wl-copy, clipboard history store
+
+  forge-clip-watch      (scripts/forge-clip-watch.sh)
+    Role: Background Wayland clipboard watcher daemon.
+    Wired From: labwc/autostart  |  Wired To: wl-paste
+
+  forge-screenshot      (scripts/forge-screenshot.sh)
+    Role: Win+Shift+S region/fullscreen screenshot capture to ~/Pictures.
+    Wired From: labwc/rc.xml (Win+Shift+S)  |  Wired To: grim, slurp, wl-copy
+
+  forge-deb-install     (scripts/forge-deb-install.sh)
+    Role: Double-click graphical installer for local .deb packages.
+    Wired From: data/theme/forge-deb-install.desktop (Thunar)  |  Wired To: pkexec apt install
+
+  forge-help            (scripts/forge-help.sh)
+    Role: Opens offline Forge OS HTML Helpbook in browser.
+    Wired From: Duck Launcher, Terminal  |  Wired To: /usr/share/forge/docs/helpbook.html
+
+  forge-profile         (scripts/forge-profile.sh)
+    Role: Exports/imports your installed dev tools & configs as a portable bundle.
+    Wired From: Settings -> About & Repair  |  Wired To: dev list, tar
+
+  forge-welcome-term    (scripts/forge-welcome-term.sh)
+    Role: Displays Forge OS cheatsheet banner when opening terminal.
+    Wired From: foot terminal startup  |  Wired To: stdout
+
+--- [B] UI, THEME, KEYMAPS & BOOT ---
+★ waybar/config         (data/theme/waybar/config)
+    Role: Defines bottom taskbar modules, Duck menu button, RAM cleaner, clock & power.
+    Wired From: labwc/autostart  |  Wired To: forge-toggle, forge-clean, wlr/taskbar
+
+★ waybar/style.css      (data/theme/waybar/style.css)
+    Role: Dark Cherry CSS styling for taskbar buttons, hover states & active window pill.
+    Wired From: waybar  |  Wired To: GTK/Waybar CSS engine
+
+  Forge-Cherry/themerc  (data/theme/Forge-Cherry/openbox-3/themerc)
+    Role: Window titlebar colors, active/inactive borders & _ □ × button geometry.
+    Wired From: labwc/rc.xml  |  Wired To: labwc compositor
+
+  data/keymap.toml      (data/keymap.toml)
+    Role: Single source of truth for all Windows-familiar shortcuts.
+    Wired From: crates/forge-conf/src/keymap.rs  |  Wired To: labwc/rc.xml & sway/config
+
+★ branding/brand.toml   (branding/brand.toml)
+    Role: Master palette (#070709, #9B1126, #C42B42), OS name & typography.
+    Wired From: crates/forge-brand/build.rs  |  Wired To: Every Rust UI crate
+
+  plymouth/forge.script (branding/plymouth/forge/forge.script)
+    Role: Draws Solid Black Duck logo, FORGE OS title & Dark Cherry loading bar at boot.
+    Wired From: branding/plymouth/forge/forge.plymouth  |  Wired To: initramfs/Plymouth
+
+  plymouth/forge.plymouth (branding/plymouth/forge/forge.plymouth)
+    Role: Registers Plymouth theme paths & script entrypoint.
+    Wired From: plymouth-set-default-theme  |  Wired To: forge.script
+
+  forge-track-profile.sh (/etc/profile.d/forge-track.sh)
+    Role: Hooks bash PROMPT_COMMAND to record failed commands locally.
+    Wired From: /etc/profile (every login shell)  |  Wired To: ~/.local/state/forge/errors.log
+
+  firefox-policies.json (/etc/firefox/policies/policies.json)
+    Role: Disables Firefox telemetry, Pocket, sponsored tiles & enforces privacy defaults.
+    Wired From: Firefox ESR startup  |  Wired To: Firefox browser
+
+  adblock/hosts.block   (data/adblock/hosts.block)
+    Role: Curated ad/tracker domain sinkhole list.
+    Wired From: forge-adblock  |  Wired To: /etc/hosts
+
+  greetd/config.toml    (/etc/greetd/config.toml)
+    Role: Auto-starts /usr/local/bin/forge-session on VT1 at boot.
+    Wired From: greetd.service  |  Wired To: forge-session
+
+--- [C] SYSTEMD, ZERO-RAM PROXIES & KERNEL ---
+★ forged.socket         (data/systemd/forged.socket)
+    Role: Holds /run/forge/forged.sock open at 0 MiB RAM until dev/Settings connects.
+    Wired From: systemd sockets.target  |  Wired To: forged.service
+
+★ forged.service        (data/systemd/forged.service)
+    Role: Runs /usr/local/bin/forged with 90-second idle auto-exit.
+    Wired From: forged.socket  |  Wired To: /usr/local/bin/forged
+
+  org.forge.catalog.policy (data/systemd/org.forge.catalog.policy)
+    Role: Polkit authorization rules for package install/remove/parking actions.
+    Wired From: polkitd  |  Wired To: forged policy check
+
+  forge-config-backup.service & .timer
+    Role: Runs daily allowlisted backup of ~/.config via systemd timer.
+    Wired From: timers.target  |  Wired To: /usr/local/bin/forge-config-backup
+
+  forge-{postgres,redis,mariadb}-proxy.{socket,service} + postgresql-parked.conf
+    Role: Zero-RAM systemd-socket-proxyd listeners (5432, 6379, 3306) that wake DBs on demand.
+    Wired From: crates/forged/src/parking.rs  |  Wired To: postgresql, redis-server, mariadb
+
+  99-forge.conf         (/etc/sysctl.d/99-forge.conf)
+    Role: Kernel VM tuning (vm.swappiness=100 for zram, low dirty ratio).
+    Wired From: systemd-sysctl  |  Wired To: Linux kernel /proc/sys/vm/*
+
+  earlyoom              (/etc/default/earlyoom)
+    Role: Prevents OOM freezes by preferring compilers over labwc/waybar.
+    Wired From: earlyoom.service  |  Wired To: Linux OOM killer
+
+  journald/forge.conf   (/etc/systemd/journald.conf.d/forge.conf)
+    Role: Caps systemd journal disk usage so small SSDs never fill up.
+    Wired From: systemd-journald  |  Wired To: /var/log/journal
+
+  99forge-norecommends  (/etc/apt/apt.conf.d/99forge-norecommends)
+    Role: Prevents apt from pulling in bloated optional packages.
+    Wired From: apt / apt-get  |  Wired To: Debian package manager
+
+--- [D] CORE RUST APPS, DAEMONS & IMAGE BUILDERS ---
+★ crates/forge-settings/src/ui.rs & model.rs
+    Role: 9-page Control Center (System Monitor graphs, Task Manager, Date/Time, Network,
+          Devices, Software Store, Parked Services, Projects, 5 Themes, About & Repair).
+    Wired From: Win+I, Duck Launcher  |  Wired To: forged.sock, nmcli, forge-repair, forge-adblock
+
+★ crates/forge-shell/src/ui.rs & launcher.rs
+    Role: Duck Start Launcher, Quick Settings (Volume/Brightness/Audio/Toggles), Power Menu.
+    Wired From: forge-toggle, Win key  |  Wired To: pactl, brightnessctl, nmcli, systemctl
+
+★ crates/forge-conf/src/emit_{labwc,gtk,foot,sway}.rs
+    Role: Generates ~/.config files for labwc, GTK4/GTK3 Dark Cherry theme, foot & sway.
+    Wired From: image/rootfs.mk, forge-repair configs  |  Wired To: ~/.config/*
+
+  crates/forge-brand/src/lib.rs
+    Role: Shared compile-time brand & color constants used across all Rust crates.
+    Wired From: All crates  |  Wired To: branding/brand.toml
+
+★ crates/forged/src/{lib,parking,policy}.rs
+    Role: Socket-activated daemon handling dev catalog installs, transactions & DB parking.
+    Wired From: forged.socket  |  Wired To: forge-catalog, forge-txn, apt, systemd
+
+  crates/dev-cli/src/main.rs
+    Role: `dev` CLI (`search`, `add`, `remove`, `list`, `on/off`, `doctor`).
+    Wired From: Terminal  |  Wired To: /run/forge/forged.sock
+
+  crates/forge-tier/src/lib.rs
+    Role: Detects RAM/CPU/GPU and assigns Tier 0–3 (software vs hardware rendering).
+    Wired From: forge-session  |  Wired To: /proc/meminfo, /sys/class/drm
+
+  crates/forge-lab/src/{sim,ui}.rs
+    Role: Developer Labs (Virtual OS simulation, atomic rollback patcher, Helpbook).
+    Wired From: Duck Launcher, Terminal  |  Wired To: pkexec, /var/lib/forge/lab-rollback/
+
+★ image/packages.list, image/rootfs.mk, image/iso.mk
+    Role: Full Debian 13 OS build pipeline -> rootfs -> hybrid UEFI+BIOS bootable ISO.
+    Wired From: Makefile (`make rootfs`, `make iso`, `make usb`)  |  Wired To: debootstrap, grub-mkrescue
+
+================================================================================
+6. QUICK COOKBOOK: "IF I WANT TO CHANGE X, EDIT FILE Y"
+================================================================================
+  • Add a new Color Theme:
+      1. Edit `crates/forge-settings/src/model.rs` (add theme hex palette)
+      2. Edit `crates/forge-settings/src/ui.rs` (add theme button)
+  • Add a new button/icon to the bottom Taskbar:
+      1. Edit `/usr/share/forge/waybar/config` (add custom module + on-click command)
+      2. Edit `/usr/share/forge/waybar/style.css` (style the button colors/padding)
+  • Add a new Keyboard Shortcut (e.g. Win+T):
+      1. Edit `data/keymap.toml` + `crates/forge-conf/src/emit_labwc.rs`
+  • Create your own system command/tool:
+      1. Type tool name in the top bar -> click "+ Create Tool"
+      2. Write your script -> "Save & Stage This File" -> "1. Test in Virtual OS" -> "2. Patch Live OS"
+  • Undo everything if you break core files:
+      1. Open Settings (Win+I) -> About & Repair -> "Factory Core Restore"
+         (Restores /var/lib/forge/factory-core/* without touching /home!)
+================================================================================

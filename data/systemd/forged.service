@@ -1,0 +1,9 @@
+[Unit]
+Description=Forge OS Catalog & Transaction Daemon (socket-activated)
+Requires=forged.socket
+After=forged.socket
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/forged --socket /run/forge/forged.sock --catalog-dir /usr/share/forge/catalog --idle-timeout 90
+StateDirectory=forge

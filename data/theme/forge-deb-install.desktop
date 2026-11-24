@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Forge OS Package Installer
+Comment=Install Debian .deb packages with one click
+Exec=foot -e /usr/local/bin/forge-deb-install %f
+Icon=system-software-install
+Terminal=false
+MimeType=application/vnd.debian.binary-package;application/x-deb;
+Categories=System;PackageManager;

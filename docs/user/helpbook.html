@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forge OS 1.0 — Official Helpbook</title>
+<style>
+  :root { --bg: #070709; --surface: #121217; --border: #26161A; --cherry: #9B1126; --cherry-hi: #C42B42; --fg: #ECECEF; --muted: #A1A1AA; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 36px 24px 64px; }
+  header { display: flex; align-items: center; gap: 18px; border-bottom: 2px solid var(--cherry); padding-bottom: 20px; margin-bottom: 28px; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+  .tagline { color: var(--muted); margin: 4px 0 0; font-size: 14px; }
+  h2 { color: var(--cherry-hi); margin-top: 32px; font-size: 19px; border-left: 4px solid var(--cherry); padding-left: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card h3 { margin: 0 0 8px; font-size: 15px; color: var(--fg); }
+  code, pre { font-family: "JetBrains Mono", monospace; background: #0C0C10; border: 1px solid var(--border); border-radius: 6px; }
+  code { padding: 2px 6px; color: #FF758F; font-size: 13px; }
+  pre { padding: 14px; overflow-x: auto; font-size: 13px; color: var(--fg); }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--surface); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--cherry-hi); background: #0D0D12; }
+  footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>FORGE OS 1.0 — HELPBOOK</h1>
+      <p class="tagline">"Everything you need is already here. Everything you don't need is one word away — and never runs until you ask."</p>
+    </div>
+  </header>
+
+  <h2>1. Windows-Familiar Shortcuts & Mouse Controls</h2>
+  <table>
+    <tr><th>Shortcut / Action</th><th>What It Does</th></tr>
+    <tr><td><code>Win (Super)</code> or Duck Button</td><td>Toggle the Forge App Burst launcher (click outside or press <code>Esc</code> to close)</td></tr>
+    <tr><td><code>Alt + Tab</code> / <code>Alt + F4</code></td><td>Switch windows / Close active window</td></tr>
+    <tr><td><code>Win + E</code> / <code>Win + I</code> / <code>Win + N</code></td><td>Open Files (Thunar) / Settings / Code Editor (Mousepad)</td></tr>
+    <tr><td><code>Win + A</code> / <code>Ctrl + Alt + Del</code></td><td>Quick Settings (Volume, Brightness, Wi-Fi) / Power Menu</td></tr>
+    <tr><td><code>Ctrl + V</code> / <code>Ctrl + Shift + C</code></td><td>Paste / Copy in <code>foot</code> terminal (<code>Ctrl + C</code> stops running commands)</td></tr>
+    <tr><td>Right-click Desktop or Taskbar</td><td>Open the Dark Cherry quick context menu</td></tr>
+    <tr><td>Drag Titlebar / <code>Win + Right-Drag</code></td><td>Move any window smoothly / Resize any window</td></tr>
+  </table>
+
+  <h2>2. The <code>dev</code> CLI & Software Catalog (30 Curated Tools)</h2>
+  <pre>dev search postg          # Instant trigram + typo-tolerant search
+dev add postgres --yes    # Install PostgreSQL (parked at 0 MB RAM until used!)
+dev add web               # Install full Web Stack (Node.js LTS + PostgreSQL)
+dev add systems           # Install Systems Stack (Rust + Neovim + ripgrep)
+dev list                  # Show installed & parked services
+dev on postgres / off     # Manually wake or park an on-demand service
+dev doctor                # Hardware tier report & daemon status</pre>
+
+  <h2>3. Keeping Your Dev Machine Fast & Clean</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Zero-RAM Service Parking</h3>
+      <p>Databases like <strong>PostgreSQL</strong>, <strong>Redis</strong>, and <strong>MariaDB</strong> are parked behind <code>systemd-socket-proxyd</code>. They consume <strong>0 MB RAM</strong> until your app connects, and automatically stop 90 seconds after disconnect.</p>
+    </div>
+    <div class="card">
+      <h3>One-Click RAM &amp; Dev Cleaner</h3>
+      <p>Click the broom icon on the bottom bar or run <code>sudo forge-clean</code> to flush dirty buffers, drop kernel page/dentry caches, trim logs, and clear <code>pip/npm/go/apt</code> caches safely. Use <code>--deep</code> to prune unused Podman images.</p>
+    </div>
+    <div class="card">
+      <h3>Safety Net &amp; Recovery</h3>
+      <p>Daily allowlisted backups protect <code>/etc</code> and your dotfiles without archiving giant browser caches. Run <code>forge-repair configs</code> or <code>forge-repair full</code> anytime to restore a clean state.</p>
+    </div>
+  </div>
+
+  <h2>4. Curated Catalog Highlights</h2>
+  <div class="grid">
+    <div class="card"><h3>Editors</h3><p><code>mousepad</code> (built-in), <code>neovim</code>, <code>helix</code>, <code>zed</code>, <code>vscodium</code>, <code>vscode</code></p></div>
+    <div class="card"><h3>Languages (via mise)</h3><p><code>rust</code>, <code>node</code>, <code>python</code>, <code>go</code>, <code>zig</code>, <code>java</code>, <code>bun</code></p></div>
+    <div class="card"><h3>Databases (Parked)</h3><p><code>postgres</code>, <code>redis</code>, <code>mariadb</code>, <code>sqlite</code></p></div>
+    <div class="card"><h3>CLI &amp; DevOps</h3><p><code>ripgrep</code>, <code>fd</code>, <code>bat</code>, <code>fzf</code>, <code>tmux</code>, <code>jq</code>, <code>httpie</code>, <code>gh</code>, <code>podman</code>, <code>kubectl</code>, <code>helm</code></p></div>
+  </div>
+
+  <footer>
+    Forge OS 1.0 (Dark Cherry Edition) &bull; Built on Debian 13 (<code>trixie</code>) LTS &bull; Upstream docs: https://wiki.debian.org
+  </footer>
+</div>
+</body>
+</html>

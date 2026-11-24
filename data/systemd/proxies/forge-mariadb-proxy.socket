@@ -1,0 +1,8 @@
+[Unit]
+Description=Forge OS On-Demand MariaDB Proxy Socket
+
+[Socket]
+ListenStream=127.0.0.1:3306
+
+[Install]
+WantedBy=sockets.target

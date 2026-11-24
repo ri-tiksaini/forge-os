@@ -1,0 +1,11 @@
+[package]
+name = "forged"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forge-catalog = { path = "../forge-catalog" }
+forge-proto = { path = "../forge-proto" }
+forge-tier = { path = "../forge-tier" }
+forge-txn = { path = "../forge-txn" }

@@ -1,0 +1,6 @@
+Forge OS 1.0 — Third-Party Software Notice
+
+Forge OS includes software from the Debian 13 ("trixie") distribution and open-source
+upstream projects licensed under GPLv2/v3, LGPL, MIT, Apache-2.0, and BSD licenses.
+Full license texts for every installed Debian package are located in
+/usr/share/doc/<package>/copyright inside the system image.

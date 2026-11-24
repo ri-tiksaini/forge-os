@@ -1,0 +1,125 @@
+* {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Inter", "JetBrains Mono", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    border-radius: 0;
+}
+
+window#waybar {
+    background-color: #070709;
+    color: #ECECEF;
+    border-top: 2px solid #9B1126;
+}
+
+#custom-duck {
+    background-color: #9B1126;
+    color: #ECECEF;
+    font-weight: 800;
+    border-radius: 8px;
+    margin: 5px 6px 5px 8px;
+    padding: 0 10px;
+}
+
+#custom-duck:hover {
+    background-color: #B81D36;
+}
+
+#custom-term, #custom-editor, #custom-files, #custom-browser, #custom-settings {
+    background-color: #121217;
+    color: #ECECEF;
+    border: 1px solid #26161A;
+    border-radius: 8px;
+    margin: 5px 2px;
+    padding: 0 8px;
+}
+
+#custom-term:hover, #custom-editor:hover, #custom-files:hover, #custom-browser:hover, #custom-settings:hover {
+    background-color: #240B10;
+    border-color: #9B1126;
+}
+
+#workspaces button {
+    background-color: #111115;
+    color: #8E8E98;
+    border-radius: 6px;
+    margin: 6px 2px;
+    padding: 0 6px;
+}
+
+#workspaces button.focused {
+    background-color: #9B1126;
+    color: #FFFFFF;
+}
+
+#cpu, #memory, #network, #pulseaudio, #battery, #clock {
+    background-color: #111115;
+    color: #ECECEF;
+    border: 1px solid #26161A;
+    border-radius: 8px;
+    margin: 5px 3px;
+    padding: 0 10px;
+    font-family: "Font Awesome 6 Free", "JetBrains Mono", monospace;
+    font-size: 11px;
+}
+
+#clock {
+    border-color: #9B1126;
+    margin-right: 8px;
+}
+
+#custom-quick {
+    background-color: #16161D;
+    color: #ECECEF;
+    border: 1px solid #26161A;
+    border-radius: 8px;
+    margin: 5px 2px;
+    padding: 0 8px;
+}
+
+#custom-quick:hover {
+    border-color: #9B1126;
+    background-color: #240B10;
+}
+
+#custom-power {
+    background-color: #9B1126;
+    color: #FFFFFF;
+    border-radius: 8px;
+    margin: 5px 8px 5px 3px;
+    padding: 0 10px;
+}
+
+#custom-power:hover {
+    background-color: #C42B42;
+}
+
+#taskbar button {
+    background-color: #141419;
+    color: #D4D4D8;
+    border: 1px solid #26161A;
+    border-radius: 7px;
+    margin: 5px 2px;
+    padding: 0 8px;
+}
+
+#taskbar button.active {
+    background-color: #240B10;
+    border-color: #9B1126;
+    color: #FFFFFF;
+}
+
+#custom-clean {
+    background-color: #16161D;
+    color: #C42B42;
+    border: 1px solid #26161A;
+    border-radius: 8px;
+    margin: 5px 2px;
+    padding: 0 8px;
+}
+
+#custom-clean:hover {
+    border-color: #9B1126;
+    background-color: #240B10;
+    color: #FFFFFF;
+}
